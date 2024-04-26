@@ -1,7 +1,8 @@
 CLASS_NAMES: ['Vehicle', 'Pedestrian', 'Cyclist']
 
 DATA_CONFIG:
-  _BASE_CONFIG_: cfgs/dataset_configs/waymo_dataset.yaml
+  _BASE_CONFIG_: cfgs/dataset_configs/nuscenes_dataset.yaml
+#  _BASE_CONFIG_: cfgs/dataset_configs/waymo_dataset.yaml
   SAMPLED_INTERVAL: {'train': 1, 'test': 10}
   POINT_CLOUD_RANGE: [-74.88, -74.88, -2, 74.88, 74.88, 4.0]
   DATA_AUGMENTOR:
@@ -81,7 +82,8 @@ MODEL:
       shifts_list: [[[0, 0, 0], [6, 6, 0]]]
       normalize_pos: False
 
-    trt_engine: path to trt_engine
+#    trt_engine: path to trt_engine
+    trt_engine: deploy_files/dsvt.engine
     block_name: ['DSVTBlock']
     set_info: [[36, 4]]
     d_model: [192]
