@@ -1,0 +1,29 @@
+python3 -m pcdet.datasets.nuscenes.nuscenes_dataset --func create_nuscenes_infos \
+    --cfg_file tools/cfgs/dataset_configs/nuscenes_dataset.yaml \
+    --version v1.0-mini
+
+
+bash scripts/dist_train.sh 8 --cfg_file cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml --sync_bn
+
+1. train the model
+python3 tools/train.py --cfg_file tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml
+
+2. test
+cd tools
+python3 test.py --cfg_file cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml
+
+
+3. convert to onnx
+python deploy.py
+onnx saved at
+DSVT/tools/deploy_files/
+
+3. onnx convert to TRT engine
+I only run /usr/src/tensorrt/bin/trtexec --onnx=./deploy_files/dsvt.onnx  --saveEngine=./deploy_files/dsvt.engine
+with the options, it causes an error
+/usr/src/tensorrt/bin/trtexec --onnx=./deploy_files/dsvt.onnx  --saveEngine=./deploy_files/dsvt.engine --memPoolSize=workspace:4096 --verbose --buildOnly --device=1 --fp16 --tacticSources=+CUDNN,+CUBLAS,-CUBLAS_LT,+EDGE_MASK_CONVOLUTIONS --minShapes=src:3000x192,set_voxel_inds_tensor_shift_0:2x170x36,set_voxel_inds_tensor_shift_1:2x100x36,set_voxel_masks_tensor_shift_0:2x170x36,set_voxel_masks_tensor_shift_1:2x100x36,pos_embed_tensor:4x2x3000x192 --optShapes=src:20000x192,set_voxel_inds_tensor_shift_0:2x1000x36,set_voxel_inds_tensor_shift_1:2x700x36,set_voxel_masks_tensor_shift_0:2x1000x36,set_voxel_masks_tensor_shift_1:2x700x36,pos_embed_tensor:4x2x20000x192 --maxShapes=src:35000x192,set_voxel_inds_tensor_shift_0:2x1500x36,set_voxel_inds_tensor_shift_1:2x1200x36,set_voxel_masks_tensor_shift_0:2x1500x36,set_voxel_masks_tensor_shift_1:2x1200x36,pos_embed_tensor:4x2x35000x192
+> debug.log 2>&1
+
+4.
+python3 tools/test.py --cfg_file tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml
+
