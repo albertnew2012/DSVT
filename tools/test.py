@@ -19,13 +19,18 @@ from pcdet.utils import common_utils
 
 
 def parse_config():
+    print(os.getcwd())
     parser = argparse.ArgumentParser(description='arg parser')
-    parser.add_argument('--cfg_file', type=str, default=None, help='specify the config for training')
-
+    # test trained model
+    # parser.add_argument('--cfg_file', type=str, default="cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml", help='specify the config for training')
+    # test trt engine
+    parser.add_argument('--cfg_file', type=str, default="", help='specify the config for training')
+    # parser.add_argument('--cfg_file', type=str, default="cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml", help='specify the config for training')
     parser.add_argument('--batch_size', type=int, default=None, required=False, help='batch size for training')
     parser.add_argument('--workers', type=int, default=4, help='number of workers for dataloader')
     parser.add_argument('--extra_tag', type=str, default='default', help='extra tag for this experiment')
-    parser.add_argument('--ckpt', type=str, default=None, help='checkpoint to start from')
+    # parser.add_argument('--ckpt', type=str, default=None, help='checkpoint to start from')
+    parser.add_argument('--ckpt', type=str, default="../output/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_2.pth", help='checkpoint to start from')
     parser.add_argument('--pretrained_model', type=str, default=None, help='pretrained_model')
     parser.add_argument('--launcher', choices=['none', 'pytorch', 'slurm'], default='none')
     parser.add_argument('--tcp_port', type=int, default=18888, help='tcp port for distrbuted training')

@@ -13,7 +13,9 @@ from typing import Sequence, NamedTuple
 
 
 ####### load model #######
-cfg_file = "./cfgs/dsvt_models/dsvt_plain_1f_onestage.yaml"
+# cfg_file = "./cfgs/dsvt_models/dsvt_plain_1f_onestage.yaml"
+# cfg_file = "cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
+cfg_file = "cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences.yaml"
 cfg_from_yaml_file(cfg_file, cfg)
 if os.path.exists('./deploy_files')==False:
     os.mkdir('./deploy_files')
@@ -27,14 +29,16 @@ test_set, test_loader, sampler = build_dataloader(
 )
 
 model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
-ckpt = "path to dsvt piller version ckpt"
+# ckpt = "path to dsvt piller version ckpt"
+ckpt = "../output/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_2.pth"
 model.load_params_from_file(filename=ckpt, logger=logger, to_cpu=False, pre_trained_path=None)
 model.eval()
 model.cuda()
 ####### load model #######
 
 ####### read input #######
-batch_dict = torch.load("path to batch_dict.pth", map_location="cuda")
+# batch_dict = torch.load("path to batch_dict.pth", map_location="cuda")
+batch_dict = torch.load("../batch_dict.pth", map_location="cuda")
 inputs = batch_dict
 ####### read input #######
 
