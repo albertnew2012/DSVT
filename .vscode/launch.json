@@ -1,0 +1,55 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Train Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/train.py",
+            "console": "internalConsole",
+            "args": [
+                "--cfg_file",
+                "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
+            ],
+            "stopOnEntry": true
+        },
+        {
+            "name": "Python: Test Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/test.py",
+            "console": "internalConsole",
+            "args": [
+                "--cfg_file",
+                "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml",
+                "--ckpt",
+                "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_9.pth"
+            ],
+            "stopOnEntry": true
+        },
+        {
+            "name": "Python: Deploy Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/deploy.py",
+            "console": "internalConsole",
+            // "args": [],
+            "stopOnEntry": true
+        },
+        {
+            "name": "Python: Test TRT Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/test.py",
+            "console": "internalConsole",
+            "args": [
+                "--cfg_file",
+                "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
+                // "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_trtengine.yaml",
+                // "--ckpt",
+                // "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_9.pth"
+            ],
+            "stopOnEntry": true
+        }
+    ]
+}
