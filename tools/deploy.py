@@ -7,6 +7,7 @@ import os
 import numpy as np
 import torch
 import onnx
+from onnx import shape_inference
 import onnxruntime as ort
 import torch.nn as nn
 
@@ -17,6 +18,7 @@ print(os.getcwd())
 ####### load model #######
 # cfg_file = "./cfgs/dsvt_models/dsvt_plain_1f_onestage.yaml"
 cfg_file = "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences.yaml"
+# cfg_file = "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
 cfg_from_yaml_file(cfg_file, cfg)
 if os.path.exists('./deploy_files')==False:
     os.mkdir('./deploy_files')
@@ -31,7 +33,7 @@ test_set, test_loader, sampler = build_dataloader(
 
 model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
 # ckpt = "path to dsvt piller version ckpt"
-ckpt =  "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_9.pth"
+ckpt =  "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_1.pth"
 model.load_params_from_file(filename=ckpt, logger=logger, to_cpu=False, pre_trained_path=None)
 model.eval()
 model.cuda()
@@ -232,8 +234,20 @@ with torch.no_grad():
         output_names=output_names, dynamic_axes=dynamic_axes,
         opset_version=14,
     )
+
+    # change onnx model to inferred model 
+    inferred_model_path = f"{base_name}_inferred.onnx"
+    # Load the original model
+    model = onnx.load(onnx_path)
+    # Run shape inference
+    inferred_model = shape_inference.infer_shapes(model)
+    # Save the inferred model
+    onnx.save(inferred_model, inferred_model_path)
+
+
     # test onnx
-    ort_session = ort.InferenceSession(onnx_path)
+    providers = ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+    ort_session = ort.InferenceSession(inferred_model_path,providers=providers)
     def to_numpy(tensor):
         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
     

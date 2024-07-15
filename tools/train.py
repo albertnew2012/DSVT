@@ -17,6 +17,12 @@ from pcdet.utils import common_utils
 from train_utils.optimization import build_optimizer, build_scheduler
 from train_utils.train_utils import train_model
 
+import importlib.util
+
+pcdet_spec = importlib.util.find_spec('pcdet')
+pcdet_location = pcdet_spec.origin
+
+print(f'The location of pcdet is: {pcdet_location}')
 
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')

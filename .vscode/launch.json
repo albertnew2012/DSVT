@@ -11,7 +11,7 @@
                 "--cfg_file",
                 "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
             ],
-            "stopOnEntry": true
+            "stopOnEntry": false
         },
         {
             "name": "Python: Test Script",
@@ -23,9 +23,9 @@
                 "--cfg_file",
                 "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml",
                 "--ckpt",
-                "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_9.pth"
+                "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_2.pth"
             ],
-            "stopOnEntry": true
+            "stopOnEntry": false
         },
         {
             "name": "Python: Deploy Script",
@@ -34,7 +34,7 @@
             "program": "${workspaceFolder}/tools/deploy.py",
             "console": "internalConsole",
             // "args": [],
-            "stopOnEntry": true
+            "stopOnEntry": false
         },
         {
             "name": "Python: Test TRT Script",
@@ -49,7 +49,7 @@
                 // "--ckpt",
                 // "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_9.pth"
             ],
-            "stopOnEntry": true
+            "stopOnEntry": false
         }
     ]
 }

@@ -13,4 +13,6 @@ venv/
 *.zip
 *.bin
 output
-version.py
+version.py   
+*.onnx
+*.log
