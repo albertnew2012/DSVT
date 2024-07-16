@@ -9,9 +9,13 @@
             "console": "internalConsole",
             "args": [
                 "--cfg_file",
-                "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
+                "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences.yaml"
+                // "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
             ],
-            "stopOnEntry": false
+            "stopOnEntry": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         },
         {
             "name": "Python: Test Script",
@@ -23,9 +27,12 @@
                 "--cfg_file",
                 "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml",
                 "--ckpt",
-                "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_2.pth"
+                "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_1.pth"
             ],
-            "stopOnEntry": false
+            "stopOnEntry": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         },
         {
             "name": "Python: Deploy Script",
@@ -34,7 +41,10 @@
             "program": "${workspaceFolder}/tools/deploy.py",
             "console": "internalConsole",
             // "args": [],
-            "stopOnEntry": false
+            "stopOnEntry": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         },
         {
             "name": "Python: Test TRT Script",
@@ -49,7 +59,10 @@
                 // "--ckpt",
                 // "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_9.pth"
             ],
-            "stopOnEntry": false
+            "stopOnEntry": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         }
     ]
 }
