@@ -40,7 +40,9 @@
             "console": "internalConsole",
             "args": [
                 "--cfg_file",
-                "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml"
+                "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml",
+                "--pretrained_model",
+                "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_24.pth"
                 // "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
             ],
             "stopOnEntry": true,
@@ -58,7 +60,7 @@
                 "--cfg_file",
                 "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml",
                 "--ckpt",
-                "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_99.pth"
+                "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_24.pth"
             ],
             "stopOnEntry": true,
             "env": {

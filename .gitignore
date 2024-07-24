@@ -16,3 +16,5 @@ output
 version.py   
 *.onnx
 *.log
+*.engine
+*.trt

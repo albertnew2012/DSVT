@@ -17,7 +17,8 @@ print(os.getcwd())
 
 ####### load model #######
 # cfg_file = "./cfgs/dsvt_models/dsvt_plain_1f_onestage.yaml"
-cfg_file = "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences.yaml"
+# cfg_file = "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences.yaml"
+cfg_file = "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml"
 # cfg_file = "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
 cfg_from_yaml_file(cfg_file, cfg)
 if os.path.exists('./deploy_files')==False:
@@ -34,6 +35,7 @@ test_set, test_loader, sampler = build_dataloader(
 model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
 # ckpt = "path to dsvt piller version ckpt"
 ckpt =  "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_1.pth"
+ckpt =  "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_99.pth"
 model.load_params_from_file(filename=ckpt, logger=logger, to_cpu=False, pre_trained_path=None)
 model.eval()
 model.cuda()
@@ -246,7 +248,8 @@ with torch.no_grad():
 
 
     # test onnx
-    providers = ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+    # providers = ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
     ort_session = ort.InferenceSession(inferred_model_path,providers=providers)
     def to_numpy(tensor):
         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
