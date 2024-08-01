@@ -32,3 +32,18 @@ class PointPillar(Detector3DTemplate):
 
         loss = loss_rpn
         return loss, tb_dict, disp_dict
+
+    def get_val_loss(self, batch_dict):
+        for cur_module in self.module_list:
+            batch_dict = cur_module(batch_dict)
+
+        disp_dict = {}
+
+        loss_rpn, tb_dict = self.dense_head.get_loss()
+        tb_dict = {
+            'loss_rpn': loss_rpn.item(),
+            **tb_dict
+        }
+
+        loss = loss_rpn
+        return loss, tb_dict, disp_dict

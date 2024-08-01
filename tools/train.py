@@ -4,7 +4,7 @@ import datetime
 import glob
 import os
 from pathlib import Path
-from test import repeat_eval_ckpt
+from tools.test import repeat_eval_ckpt
 
 import torch
 import torch.nn as nn
@@ -128,6 +128,18 @@ def main():
         seed=666 if args.fix_random_seed else None
     )
 
+    val_set, val_loader, val_sampler = build_dataloader(
+        dataset_cfg=cfg.DATA_CONFIG,
+        class_names=cfg.CLASS_NAMES,
+        batch_size=args.batch_size,
+        dist=dist_train, workers=args.workers,
+        logger=logger,
+        training=False,
+        # merge_all_iters_to_one_epoch=args.merge_all_iters_to_one_epoch,
+        # total_epochs=args.epochs,
+        # seed=666 if args.fix_random_seed else None
+    )
+
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=train_set)
     if args.sync_bn:
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
@@ -189,6 +201,7 @@ def main():
         tb_log=tb_log,
         ckpt_save_dir=ckpt_dir,
         train_sampler=train_sampler,
+        val_loader=val_loader,
         lr_warmup_scheduler=lr_warmup_scheduler,
         ckpt_save_interval=args.ckpt_save_interval,
         max_ckpt_save_num=args.max_ckpt_save_num,
