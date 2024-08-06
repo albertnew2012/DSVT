@@ -264,6 +264,7 @@ with torch.no_grad():
     ort_outs = ort_session.run(None, ort_inputs) 
 ####### torch to onnx #######
 
+# trtexec --onnx=./deploy_files/dsvt.onnx --saveEngine=dsvt1.engine
 
 ####### torch to trt engine #######
 # trtexec --onnx={path to onnx} --saveEngine={path to save trtengine} \

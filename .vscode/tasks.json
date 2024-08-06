@@ -1,0 +1,13 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Kill TensorBoard and Free Port 6006",
+            "type": "shell",
+            "command": "pkill -f tensorboard && PID=$(lsof -i:6006 | grep LISTEN | awk '{print \\$2}') && [ -n \\\"$PID\\\" ] && kill -9 $PID",
+            "problemMatcher": []
+        }
+    ]
+}.

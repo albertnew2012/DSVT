@@ -4,11 +4,12 @@ import datetime
 import glob
 import os
 from pathlib import Path
-from tools.test import eval_single_ckpt, repeat_eval_ckpt
+from tools.test import eval_single_ckpt,repeat_eval_ckpt
 
 import torch
 import torch.nn as nn
 from tensorboardX import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 
 from pcdet.config import cfg, cfg_from_list, cfg_from_yaml_file, log_config_to_file
 from pcdet.datasets import build_dataloader
@@ -242,8 +243,14 @@ def main():
     ckpt_list = glob.glob(str(ckpt_dir / '*.pth'))
     if len(ckpt_list) > 0:
         ckpt_list.sort(key=os.path.getmtime)
-        args.ckpt = ckpt_list[-1]
-    eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, -1)
+        # Initialize TensorBoard writer
+        writer = SummaryWriter(log_dir=str(output_dir / 'tensorboard'))
+        for epoch in range(len(ckpt_list)):
+            args.ckpt = ckpt_list[epoch]
+            ret_dict = eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch)
+            for key, val in ret_dict.items():
+                writer.add_scalar(key, val, epoch)
+            # writer.add_scalars("recall", ret_dict, epoch)
     
     logger.info('**********************End evaluation %s/%s(%s)**********************' %
                 (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))

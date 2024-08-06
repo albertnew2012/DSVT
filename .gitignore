@@ -18,3 +18,4 @@ version.py
 *.log
 *.engine
 *.trt
+events.out.tfevents.*
