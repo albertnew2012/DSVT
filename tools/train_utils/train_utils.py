@@ -177,7 +177,7 @@ def train_one_epoch(model, optimizer, train_loader, model_func, lr_scheduler, ac
 
 def train_model(model, optimizer, train_loader, model_func, lr_scheduler, optim_cfg,
                 start_epoch, total_epochs, start_iter, rank, tb_log, ckpt_save_dir, train_sampler=None, val_loader= None,
-                lr_warmup_scheduler=None, ckpt_save_interval=1, max_ckpt_save_num=50,
+                lr_warmup_scheduler=None, ckpt_save_interval=1, max_ckpt_save_num=1000,
                 merge_all_iters_to_one_epoch=False,
                 use_logger_to_record=False, logger=None, logger_iter_interval=None, ckpt_save_time_interval=None, show_gpu_stat=False, fp16=False, cfg=None):
     accumulated_iter = start_iter
@@ -258,19 +258,21 @@ def train_model(model, optimizer, train_loader, model_func, lr_scheduler, optim_
                 if val_loader is not None:
                     val_loss_disp = common_utils.AverageMeter()
                     valloader_iter = iter(val_loader)
-                    model.eval()
+                    # model.eval()
                     # iterate val_loader
                     batch_size = None
-                    with torch.no_grad():
-                        for batch in valloader_iter:
-                            load_data_to_gpu(batch)
-                            if batch_size is None:
-                                batch_size = batch['batch_size']
-                            elif batch_size!= batch['batch_size']:
-                                break
-                            loss, *_ = model.get_val_loss(batch)
-                            val_loss_disp.update(loss.item())
+                    # with torch.no_grad():
+                    for batch in valloader_iter:
+                        load_data_to_gpu(batch)
+                        if batch_size is None:
+                            batch_size = batch['batch_size']
+                        elif batch_size!= batch['batch_size']:
+                            break
+                        # loss, *_ = model.get_val_loss(batch)
+                        loss, tb_dict, disp_dict = model_func(model, batch)
+                        val_loss_disp.update(loss.item())
                     tb_log.add_scalar('validation/loss', val_loss_disp.avg, trained_epoch)
+                    val_loss_disp.reset()
 
 
 def model_state_to_cpu(model_state):
