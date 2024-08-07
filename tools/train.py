@@ -246,10 +246,13 @@ def main():
         # Initialize TensorBoard writer
         writer = SummaryWriter(log_dir=str(output_dir / 'tensorboard'))
         for epoch in range(len(ckpt_list)):
-            args.ckpt = ckpt_list[epoch]
-            ret_dict = eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch)
-            for key, val in ret_dict.items():
-                writer.add_scalar(key, val, epoch)
+            try:
+                args.ckpt = ckpt_list[epoch]
+                ret_dict = eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch)
+                for key, val in ret_dict.items():
+                    writer.add_scalar(key, val, epoch)
+            except:
+                pass
             # writer.add_scalars("recall", ret_dict, epoch)
     
     logger.info('**********************End evaluation %s/%s(%s)**********************' %
