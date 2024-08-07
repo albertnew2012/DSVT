@@ -103,9 +103,9 @@ class NuScenesDataset(DatasetTemplate):
             sweep_times_list.append(times_sweep)
 
         points = np.concatenate(sweep_points_list, axis=0)
-        times = np.concatenate(sweep_times_list, axis=0).astype(points.dtype)
+        # times = np.concatenate(sweep_times_list, axis=0).astype(points.dtype)
 
-        points = np.concatenate((points, times), axis=1)
+        # points = np.concatenate((points, times), axis=1)
         return points
 
     def __len__(self):

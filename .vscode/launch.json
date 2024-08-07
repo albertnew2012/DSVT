@@ -51,6 +51,21 @@
             }
         },
         {
+            "name": "Python: Train wts Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/train.py",
+            "console": "internalConsole",
+            "args": [
+                "--cfg_file",
+                "tools/cfgs/dsvt_models/dsvt_cbgs_dyn_pp_centerpoint.yaml"
+            ],
+            "stopOnEntry": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
             "name": "Python: Debug Test Script",
             "type": "debugpy",
             "request": "launch",
