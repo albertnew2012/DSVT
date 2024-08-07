@@ -267,6 +267,7 @@ def fill_trainval_infos(data_path, nusc, train_scenes, val_scenes, test=False, m
         ref_time = 1e-6 * ref_sd_rec['timestamp']
 
         ref_lidar_path, ref_boxes, _ = get_sample_data(nusc, ref_sd_token)
+        if not Path(ref_lidar_path).exists(): continue
 
         ref_cam_front_token = sample['data']['CAM_FRONT']
         ref_cam_path, _, ref_cam_intrinsic = nusc.get_sample_data(ref_cam_front_token)
