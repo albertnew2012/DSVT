@@ -58,7 +58,8 @@
             "console": "internalConsole",
             "args": [
                 "--cfg_file",
-                "tools/cfgs/dsvt_models/dsvt_cbgs_dyn_pp_centerpoint.yaml"
+                "tools/cfgs/dsvt_models/dsvt_cbgs_dyn_pp_centerpoint.yaml",
+                "--save_model_wts"
             ],
             "stopOnEntry": true,
             "env": {

@@ -5,7 +5,7 @@ import glob
 import os
 from pathlib import Path
 from tools.test import eval_single_ckpt,repeat_eval_ckpt
-
+import struct
 import torch
 import torch.nn as nn
 from tensorboardX import SummaryWriter
@@ -45,7 +45,7 @@ def parse_config():
     parser.add_argument('--merge_all_iters_to_one_epoch', action='store_true', default=False, help='')
     parser.add_argument('--set', dest='set_cfgs', default=None, nargs=argparse.REMAINDER,
                         help='set extra config keys if needed')
-
+    parser.add_argument('--save_model_wts', action='store_true', default=False, help='save model pth into .wts')
     parser.add_argument('--max_waiting_mins', type=int, default=0, help='max waiting minutes')
     parser.add_argument('--start_epoch', type=int, default=0, help='')
     parser.add_argument('--num_epochs_to_eval', type=int, default=0, help='number of checkpoints to be evaluated')
@@ -69,6 +69,24 @@ def parse_config():
         cfg_from_list(args.set_cfgs, cfg)
 
     return args, cfg
+
+
+def save_model_wts(model):
+    model.eval()
+    with open('dsvt.wts', 'w') as f:
+        f.write('{}\n'.format(len(model.state_dict().keys())))
+        for k, v in model.state_dict().items():
+            print('**'*10)
+            print("module." + k)
+            # print(v)
+            print(v.shape)
+            # pdb.set_trace()
+            vr = v.reshape(-1).cpu().numpy()
+            f.write('{} {} '.format("module." + k, len(vr)))
+            for vv in vr:
+                f.write(' ')
+                f.write(struct.pack('>f', float(vv)).hex())
+            f.write('\n')
 
 
 def main():
@@ -215,6 +233,10 @@ def main():
         fp16=args.fp16,
         cfg=cfg
     )
+    # -----------------------save model .pth into .wts---------------------------
+    logger.info('**********************Save model .pth into .wts**********************')
+    if args.save_model_wts:
+        save_model_wts(model)
 
     if hasattr(train_set, 'use_shared_memory') and train_set.use_shared_memory:
         train_set.clean_shared_memory()

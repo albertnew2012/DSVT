@@ -18,4 +18,5 @@ version.py
 *.log
 *.engine
 *.trt
+*.wts
 events.out.tfevents.*

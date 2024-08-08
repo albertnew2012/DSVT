@@ -19,7 +19,7 @@ INFO_PATH: {
 
 POINT_CLOUD_RANGE: [-74.88, -74.88, -5.0, 74.88, 74.88, 3.0]
 
-BALANCED_RESAMPLING: True 
+BALANCED_RESAMPLING: False 
 
 DATA_AUGMENTOR:
     DISABLE_AUG_LIST: ['placeholder']
@@ -39,7 +39,7 @@ DATA_AUGMENTOR:
               'barrier:2', 'motorcycle:6', 'bicycle:6', 'pedestrian:2', 'traffic_cone:2'
           ]
 
-          NUM_POINT_FEATURES: 5
+          NUM_POINT_FEATURES: 4
           DATABASE_WITH_FAKELIDAR: False
           REMOVE_EXTRA_WIDTH: [0.0, 0.0, 0.0]
           LIMIT_WHOLE_SCENE: True
