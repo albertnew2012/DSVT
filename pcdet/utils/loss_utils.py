@@ -398,7 +398,7 @@ def calculate_iou_loss_centerhead(iou_preds, batch_box_preds, mask, ind, gt_boxe
     Returns:
     """
     if mask.sum() == 0:
-        return iou_preds.new_zeros((1))
+        return iou_preds.new_zeros(())
 
     mask = mask.bool()
     selected_iou_preds = _transpose_and_gather_feat(iou_preds, ind)[mask]
