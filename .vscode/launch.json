@@ -67,6 +67,21 @@
             }
         },
         {
+            "name": "Python: visualize eval result.pkl",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/visual_utils/visualize_eval_result.py",
+            "console": "internalConsole",
+            "args": [
+                "output/cfgs/dsvt_models/dsvt_cbgs_dyn_pp_centerpoint/default/eval/eval_with_train/result.pkl"
+                // "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/eval/epoch_99/val/default/result.pkl"
+            ],
+            "stopOnEntry": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
             "name": "Python: Debug Test Script",
             "type": "debugpy",
             "request": "launch",
