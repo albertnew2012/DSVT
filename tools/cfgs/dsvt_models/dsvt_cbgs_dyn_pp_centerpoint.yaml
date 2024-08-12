@@ -2,7 +2,7 @@ CLASS_NAMES: ['car','truck', 'construction_vehicle', 'bus', 'trailer',
               'barrier', 'motorcycle', 'bicycle', 'pedestrian', 'traffic_cone']
 
 DATA_CONFIG:
-    _BASE_CONFIG_: tools/cfgs/dataset_configs/nuscenes_dataset.yaml
+    _BASE_CONFIG_: tools/cfgs/dataset_configs/nuscenes_dataset_feature_4.yaml
 
     POINT_CLOUD_RANGE: [-74.88, -74.88, -5.0, 74.88, 74.88, 3.0]
     DATA_PROCESSOR:

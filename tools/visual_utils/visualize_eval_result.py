@@ -4,6 +4,8 @@ import os
 import pickle
 import argparse
 
+n = 0
+
 colors = [
     (1, 0, 0),     # Red
     (0, 0, 1),     # Blue
@@ -49,12 +51,19 @@ def visualize(points: np.array, boxes: np.array, labels=None):
     o3d.visualization.draw_geometries(geometries)
 
 
-def load_pcd_bin_file(file_path):
+def load_pcd_bin_file(file_path,save_bin=True):
     # Load the binary point cloud file
     with open(file_path, 'rb') as f:
-        # Each point is represented by 5 floats (x, y, z, intensity, ring)
+        # By default, each point is represented by 5 floats (x, y, z, intensity, ring)
         points = np.fromfile(f, dtype=np.float32).reshape(-1, 5)
 
+    # save points[:,:4] into .bin file for DSVT-AI-TRT
+    if save_bin:
+        global n
+        n = n + 1
+        file_name = str(n).zfill(6) + ".bin"
+        points[:,:4].tofile("data/bin/" + file_name)
+        
     # Extract XYZ coordinates
     xyz = points[:, :3]
 
@@ -83,6 +92,7 @@ def main(results_path):
                 f"The specified file {ret['frame_id']}.bin was not found.")
         # Load the point cloud
         pcd = load_pcd_bin_file(pcd_path)
+        
         # Visualize the point cloud
         visualize(np.asarray(pcd.points),
                   ret['boxes_lidar'], ret['pred_labels'])
