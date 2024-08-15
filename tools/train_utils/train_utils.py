@@ -261,16 +261,16 @@ def train_model(model, optimizer, train_loader, model_func, lr_scheduler, optim_
                     # model.eval()
                     # iterate val_loader
                     batch_size = None
-                    # with torch.no_grad():
-                    for batch in valloader_iter:
-                        load_data_to_gpu(batch)
-                        if batch_size is None:
-                            batch_size = batch['batch_size']
-                        elif batch_size!= batch['batch_size']:
-                            break
-                        # loss, *_ = model.get_val_loss(batch)
-                        loss, tb_dict, disp_dict = model_func(model, batch)
-                        val_loss_disp.update(loss.item())
+                    with torch.no_grad():
+                        for batch in valloader_iter:
+                            load_data_to_gpu(batch)
+                            if batch_size is None:
+                                batch_size = batch['batch_size']
+                            elif batch_size!= batch['batch_size']:
+                                break
+                            # loss, *_ = model.get_val_loss(batch)
+                            loss, tb_dict, disp_dict = model_func(model, batch)
+                            val_loss_disp.update(loss.item())
                     tb_log.add_scalar('validation/loss', val_loss_disp.avg, trained_epoch)
                     val_loss_disp.reset()
 
