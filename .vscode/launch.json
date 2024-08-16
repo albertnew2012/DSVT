@@ -51,23 +51,42 @@
             }
         },
         {
-            "name": "Python: Debug onestage_safeai",
+            "name": "Python: Debug export onnx",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/tools/train.py",
+            "program": "${workspaceFolder}/tools/deploy_full.py",
             "console": "internalConsole",
             "args": [
-                "--cfg_file",
-                "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_safeai_debug.yaml",
+                // "--cfg_file",
+                // "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml",
                 // "--pretrained_model",
                 // "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_24.pth"
                 // "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
             ],
+            "justMyCode": false,  // Add this line to allow stepping into non-user code
             "stopOnEntry": true,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             }
         },
+        // {
+        //     "name": "Python: Debug onestage_safeai",
+        //     "type": "debugpy",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/tools/train.py",
+        //     "console": "internalConsole",
+        //     "args": [
+        //         "--cfg_file",
+        //         "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_safeai_debug.yaml",
+        //         // "--pretrained_model",
+        //         // "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_24.pth"
+        //         // "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
+        //     ],
+        //     "stopOnEntry": true,
+        //     "env": {
+        //         "PYTHONPATH": "${workspaceFolder}"
+        //     }
+        // },
         {
             "name": "Python: Train wts Script",
             "type": "debugpy",

@@ -17,10 +17,13 @@ from typing import Sequence, NamedTuple
 
 # for plain version, covert the torch model to onnx model
 
-cfg_file = "cfg file"
+cfg_file = "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml"
 cfg_from_yaml_file(cfg_file, cfg)
 
-log_file = 'logs/log_trt_%s.log' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+log_file = 'deploy_files/log_trt_%s.log' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+if os.path.exists('./deploy_files')==False:
+    os.mkdir('./deploy_files')
+log_file = './deploy_files/log_trt.log'
 logger = common_utils.create_logger(log_file, rank=0)
 test_set, test_loader, sampler = build_dataloader(
     dataset_cfg=cfg.DATA_CONFIG,
@@ -30,12 +33,12 @@ test_set, test_loader, sampler = build_dataloader(
 )
 
 model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
-ckpt = "ckpt file"
+ckpt = "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_1.pth"
 model.load_params_from_file(filename=ckpt, logger=logger, to_cpu=False, pre_trained_path=None)
 model.eval()
 model.cuda()
 
-pointpillarscatter3d = model.map_to_bev
+pointpillarscatter3d = model.map_to_bev_module
 basebevresbackbone = model.backbone_2d
 center_head = model.dense_head
 shared_conv = center_head.shared_conv
@@ -145,29 +148,33 @@ class Combine3Modules(nn.Module):
     def forward(
         self, voxel_features, voxel_coords
     ):
-        spatial_features = self.pillarscatter(voxel_features, voxel_coords)
-        spatial_features_2d = self.backbone2d(spatial_features)
-        feats = self.shared_conv(spatial_features_2d)
+        batch_dict = {"pillar_features":voxel_features, "voxel_coords": voxel_coords}
+        batch_dict = self.pillarscatter(batch_dict)
+        batch_dict = self.backbone2d(batch_dict)
+        feats = self.shared_conv(batch_dict["spatial_features_2d"])
         dense_preds = self.separate_heads(feats)
         return dense_preds
 
 
 
 
-batch_dict = torch.load("input data file(after vfe)", map_location="cuda")
-points = batch_dict["points"]
-inputs = points
+# batch_dict = torch.load("input data file(after vfe)", map_location="cuda")
+batch_dict = torch.load("batch_dict.pth", map_location="cuda")
+# points = batch_dict["points"]
+# inputs = points
 
+# ptranshierarchy3d stands for point transformer hierarchy 
 with torch.no_grad():
-    ptranshierarchy3d = model.backbone_3d
+    ptranshierarchy3d = model.backbone_3d  
     # plain version, just one stage
     ptransblocks_list = ptranshierarchy3d.stage_0
     layer_norms_list = ptranshierarchy3d.residual_norm_stage_0
+    batch_dict = model.vfe(batch_dict)
+    pillar_features, voxel_coords = batch_dict["pillar_features"], batch_dict["voxel_coords"]
+    batch_dict = model.backbone_3d(batch_dict)
+    voxel_features = batch_dict["voxel_features"]
 
-    pillar_features, voxel_coords = model.vfe(inputs)
-    voxel_features = model.backbone_3d(pillar_features, voxel_coords)
-
-    voxel_info = ptranshierarchy3d.input_layer(pillar_features, voxel_coords)
+    voxel_info = ptranshierarchy3d.input_layer(batch_dict)
     set_voxel_inds_list = [[voxel_info[f'set_voxel_inds_stage{s}_shift{i}'] for i in range(2)] for s in range(1)]
     set_voxel_masks_list = [[voxel_info[f'set_voxel_mask_stage{s}_shift{i}'] for i in range(2)] for s in range(1)]
     pos_embed_list = [[[voxel_info[f'pos_embed_stage{s}_block{b}_shift{i}'] for i in range(2)] for b in range(4)] for s in range(1)]
@@ -249,7 +256,7 @@ with torch.no_grad():
         }
     }
 
-    base_name = "your onnx name"
+    base_name = "ptranshierarchy3d"
     ts_path = f"{base_name}.ts"
     onnx_path = f"{base_name}.onnx"
 
@@ -264,7 +271,10 @@ with torch.no_grad():
         opset_version=14,
     )
     # test onnx
-    ort_session = ort.InferenceSession(onnx_path)
+    # Specify the providers you want to use
+    # providers = ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+    ort_session = ort.InferenceSession(onnx_path, providers=providers)
     def to_numpy(tensor):
         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
     
@@ -306,12 +316,12 @@ with torch.no_grad():
         },
     }
 
-    base_name = "your onnx name"
+    base_name = "dsvt"
     ts_path = f"{base_name}.ts"
     onnx_path = f"{base_name}.onnx"
 
     combine3modules = Combine3Modules().eval().cuda()
-    combine3modules_inputs = (voxel_features, voxel_coords)
+    combine3modules_inputs = (batch_dict["voxel_features"], batch_dict["voxel_coords"])
 
     torch.onnx.export(
         combine3modules, combine3modules_inputs, onnx_path,

@@ -92,8 +92,13 @@ class BaseBEVBackbone(nn.Module):
         for i in range(len(self.blocks)):
             x = self.blocks[i](x)
 
-            stride = int(spatial_features.shape[2] / x.shape[2])
-            ret_dict['spatial_features_%dx' % stride] = x
+            stride = spatial_features.shape[2] // x.shape[2]
+
+            # Convert stride tensor to string using PyTorch's string formatting
+            key = f'spatial_features_{stride}x'
+
+            # Ensure the key remains a tensor operation (this is the tricky part because Python's dictionary keys must be strings)
+            ret_dict[key] = x
             if len(self.deblocks) > 0:
                 ups.append(self.deblocks[i](x))
             else:

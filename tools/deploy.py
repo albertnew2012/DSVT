@@ -13,6 +13,9 @@ import torch.nn as nn
 
 from typing import Sequence, NamedTuple
 import os
+
+from pcdet.models import load_data_to_gpu
+
 print(os.getcwd())
 
 ####### load model #######
@@ -34,12 +37,20 @@ test_set, test_loader, sampler = build_dataloader(
 
 model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
 # ckpt = "path to dsvt piller version ckpt"
-ckpt =  "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_1.pth"
-ckpt =  "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_99.pth"
+# ckpt =  "output/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint/default/ckpt/checkpoint_epoch_1.pth"
+ckpt =  "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_1.pth"
 model.load_params_from_file(filename=ckpt, logger=logger, to_cpu=False, pre_trained_path=None)
 model.eval()
 model.cuda()
 ####### load model #######
+
+for i, batch_dict in enumerate(test_loader):
+    load_data_to_gpu(batch_dict)
+    with torch.no_grad():
+        pred_dicts, ret_dict = model(batch_dict)
+
+
+
 
 ####### read input #######
 # batch_dict = torch.load("path to batch_dict.pth", map_location="cuda")

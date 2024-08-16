@@ -15,7 +15,9 @@ class PointPillarScatter3d(nn.Module):
         pillar_features, coords = batch_dict['pillar_features'], batch_dict['voxel_coords']
         
         batch_spatial_features = []
-        batch_size = coords[:, 0].max().int().item() + 1
+        # batch_size = coords[:, 0].max().int().item() + 1
+        batch_size = coords[:, 0].max() + 1  # Keep as a tensor
+        batch_size = batch_size.to(torch.int)  # Convert to an integer tensor if needed
         for batch_idx in range(batch_size):
             spatial_feature = torch.zeros(
                 self.num_bev_features_before_compression,
