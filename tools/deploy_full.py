@@ -49,11 +49,11 @@ separate_heads = center_head.heads_list[0]
 
 
 # backbone3d
-class AllPtransBlocksTRT(nn.Module):
-    def __init__(self, ptransblocks_list, layer_norms_list):
+class AllDSVTBlocksTRT(nn.Module):
+    def __init__(self, dsvtblocks_list, layer_norms_list):
         super().__init__()
         self.layer_norms_list = layer_norms_list
-        self.ptransblock_list = ptransblocks_list
+        self.dsvtblocks_list = dsvtblocks_list
     def forward(
         self,
         pillar_features,
@@ -71,14 +71,14 @@ class AllPtransBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
@@ -88,14 +88,14 @@ class AllPtransBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
@@ -105,14 +105,14 @@ class AllPtransBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
@@ -122,14 +122,14 @@ class AllPtransBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
-        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
+        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
@@ -163,23 +163,23 @@ batch_dict = torch.load("batch_dict.pth", map_location="cuda")
 # points = batch_dict["points"]
 # inputs = points
 
-# ptranshierarchy3d stands for point transformer hierarchy 
 with torch.no_grad():
-    ptranshierarchy3d = model.backbone_3d  
+    DSVT_Backbone = model.backbone_3d
     # plain version, just one stage
-    ptransblocks_list = ptranshierarchy3d.stage_0
-    layer_norms_list = ptranshierarchy3d.residual_norm_stage_0
+    dsvtblocks_list = DSVT_Backbone.stage_0
+    layer_norms_list = DSVT_Backbone.residual_norm_stage_0
     batch_dict = model.vfe(batch_dict)
-    pillar_features, voxel_coords = batch_dict["pillar_features"], batch_dict["voxel_coords"]
-    batch_dict = model.backbone_3d(batch_dict)
-    voxel_features = batch_dict["voxel_features"]
+    # pillar_features, voxel_coords = batch_dict["pillar_features"], batch_dict["voxel_coords"]
+    # batch_dict = model.backbone_3d(batch_dict)
+    # voxel_features = batch_dict["voxel_features"]
 
-    voxel_info = ptranshierarchy3d.input_layer(batch_dict)
+    voxel_info = DSVT_Backbone.input_layer(batch_dict)
     set_voxel_inds_list = [[voxel_info[f'set_voxel_inds_stage{s}_shift{i}'] for i in range(2)] for s in range(1)]
     set_voxel_masks_list = [[voxel_info[f'set_voxel_mask_stage{s}_shift{i}'] for i in range(2)] for s in range(1)]
     pos_embed_list = [[[voxel_info[f'pos_embed_stage{s}_block{b}_shift{i}'] for i in range(2)] for b in range(4)] for s in range(1)]
 
-    allptransblockstrt_inputs = (
+    pillar_features = batch_dict['voxel_features']
+    alldsvtblockstrt_inputs = (
         pillar_features,
         set_voxel_inds_list[0][0],
         set_voxel_inds_list[0][1],
@@ -256,16 +256,16 @@ with torch.no_grad():
         }
     }
 
-    base_name = "ptranshierarchy3d"
+    base_name = "DSVT_Backbone"
     ts_path = f"{base_name}.ts"
     onnx_path = f"{base_name}.onnx"
 
 
     # convert backbone3d to onnx
-    allptransblocktrt = AllPtransBlocksTRT(ptransblocks_list, layer_norms_list).eval().cuda()
+    allptransblocktrt = AllDSVTBlocksTRT(dsvtblocks_list, layer_norms_list).eval().cuda()
     torch.onnx.export(
         allptransblocktrt,
-        allptransblockstrt_inputs,
+        alldsvtblockstrt_inputs,
         onnx_path, input_names=input_names,
         output_names=output_names, dynamic_axes=dynamic_axes,
         opset_version=14,
@@ -289,6 +289,7 @@ with torch.no_grad():
 
 
 
+##############################################################################################################
     # convert pillarscatter, backbone 2d, and center head to onnx
     jit_mode = "trace"
     input_names = ["voxel_features", "voxel_coords"]
@@ -331,7 +332,20 @@ with torch.no_grad():
     )
 
 
+import onnx
 
+# Load the ONNX model
+model = onnx.load("dsvt.onnx")
+
+# Check the model
+try:
+    onnx.checker.check_model(model)
+    print("The model is valid.")
+except onnx.checker.ValidationError as e:
+    print(f"The model is invalid: {e}")
+
+# (Optional) Print the model graph
+print(onnx.helper.printable_graph(model.graph))
 
 '''
     conver onnx to trt engine, example of combine3modules_dynamic_shape

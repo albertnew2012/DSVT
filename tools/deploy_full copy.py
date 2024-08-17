@@ -1,20 +1,17 @@
-print("Deploy script started")
+import os
 from pcdet.config import cfg, cfg_from_yaml_file
 from pcdet.models import build_network
 from pcdet.datasets import build_dataloader
 from pcdet.utils import common_utils
-import os
+import datetime
+import tensorrt as trt
 import numpy as np
 import torch
 import onnx
-from onnx import shape_inference
 import onnxruntime as ort
 import torch.nn as nn
 
 from typing import Sequence, NamedTuple
-import os
-
-from pcdet.models import load_data_to_gpu
 
 
 
@@ -22,6 +19,8 @@ from pcdet.models import load_data_to_gpu
 
 cfg_file = "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml"
 cfg_from_yaml_file(cfg_file, cfg)
+
+log_file = 'deploy_files/log_trt_%s.log' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 if os.path.exists('./deploy_files')==False:
     os.mkdir('./deploy_files')
 log_file = './deploy_files/log_trt.log'
@@ -38,24 +37,23 @@ ckpt = "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ck
 model.load_params_from_file(filename=ckpt, logger=logger, to_cpu=False, pre_trained_path=None)
 model.eval()
 model.cuda()
-####### load model #######
 
-for i, batch_dict in enumerate(test_loader):
-    load_data_to_gpu(batch_dict)
-    with torch.no_grad():
-        pred_dicts, ret_dict = model(batch_dict)
-
-
+pointpillarscatter3d = model.map_to_bev_module
+basebevresbackbone = model.backbone_2d
+center_head = model.dense_head
+shared_conv = center_head.shared_conv
+separate_heads = center_head.heads_list[0]
 
 
 
 
-####### DSVT #######
-class AllDSVTBlocksTRT(nn.Module):
-    def __init__(self, dsvtblocks_list, layer_norms_list):
+
+# backbone3d
+class AllPtransBlocksTRT(nn.Module):
+    def __init__(self, ptransblocks_list, layer_norms_list):
         super().__init__()
         self.layer_norms_list = layer_norms_list
-        self.dsvtblocks_list = dsvtblocks_list
+        self.ptransblock_list = ptransblocks_list
     def forward(
         self,
         pillar_features,
@@ -73,14 +71,14 @@ class AllDSVTBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
@@ -90,14 +88,14 @@ class AllDSVTBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
@@ -107,14 +105,14 @@ class AllDSVTBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_0[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_0[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
@@ -124,40 +122,64 @@ class AllDSVTBlocksTRT(nn.Module):
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         set_id = 1
         set_voxel_inds = set_voxel_inds_tensor_shift_1[set_id:set_id+1].squeeze(0)
         set_voxel_masks = set_voxel_masks_tensor_shift_1[set_id:set_id+1].squeeze(0)
         pos_embed = pos_embed_tensor[blc_id:blc_id+1, set_id:set_id+1].squeeze(0).squeeze(0)
-        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed, True)
-        outputs = self.dsvtblocks_list[blc_id].encoder_list[set_id](*inputs)
+        inputs = (outputs, set_voxel_inds, set_voxel_masks, pos_embed,)
+        outputs = self.ptransblock_list[blc_id].encoder_list[set_id](*inputs)
         
         outputs = self.layer_norms_list[blc_id](residual + outputs)
 
         return outputs
-####### DSVT #######
-
-####### torch to onnx #######
 
 
-####### read input #######
-# batch_dict = torch.load("path to batch_dict.pth", map_location="cuda")
+# pillarscatter,  backbone2d, centerhead
+class Combine3Modules(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.pillarscatter = pointpillarscatter3d
+        self.backbone2d = basebevresbackbone
+        self.shared_conv = shared_conv
+        self.separate_heads = separate_heads
+    
+    def forward(
+        self, voxel_features, voxel_coords
+    ):
+        batch_dict = {"pillar_features":voxel_features, "voxel_coords": voxel_coords}
+        batch_dict = self.pillarscatter(batch_dict)
+        batch_dict = self.backbone2d(batch_dict)
+        feats = self.shared_conv(batch_dict["spatial_features_2d"])
+        dense_preds = self.separate_heads(feats)
+        return dense_preds
+
+
+
+
+# batch_dict = torch.load("input data file(after vfe)", map_location="cuda")
 batch_dict = torch.load("batch_dict.pth", map_location="cuda")
-# inputs = batch_dict
+# points = batch_dict["points"]
+# inputs = points
 
+# ptranshierarchy3d stands for point transformer hierarchy 
 with torch.no_grad():
-    DSVT_Backbone = model.backbone_3d
-    dsvtblocks_list = DSVT_Backbone.stage_0
-    layer_norms_list = DSVT_Backbone.residual_norm_stage_0
+    ptranshierarchy3d = model.backbone_3d  
+    # plain version, just one stage
+    ptransblocks_list = ptranshierarchy3d.stage_0
+    layer_norms_list = ptranshierarchy3d.residual_norm_stage_0
     batch_dict = model.vfe(batch_dict)
-    voxel_info = DSVT_Backbone.input_layer(batch_dict)
+    pillar_features, voxel_coords = batch_dict["pillar_features"], batch_dict["voxel_coords"]
+    batch_dict = model.backbone_3d(batch_dict)
+    voxel_features = batch_dict["voxel_features"]
+
+    voxel_info = ptranshierarchy3d.input_layer(batch_dict)
     set_voxel_inds_list = [[voxel_info[f'set_voxel_inds_stage{s}_shift{i}'] for i in range(2)] for s in range(1)]
     set_voxel_masks_list = [[voxel_info[f'set_voxel_mask_stage{s}_shift{i}'] for i in range(2)] for s in range(1)]
     pos_embed_list = [[[voxel_info[f'pos_embed_stage{s}_block{b}_shift{i}'] for i in range(2)] for b in range(4)] for s in range(1)]
 
-    pillar_features = batch_dict['voxel_features']
-    alldsvtblockstrt_inputs = (
+    allptransblockstrt_inputs = (
         pillar_features,
         set_voxel_inds_list[0][0],
         set_voxel_inds_list[0][1],
@@ -234,35 +256,25 @@ with torch.no_grad():
         }
     }
 
-    base_name = "./deploy_files/DSVT_Backbone"
+    base_name = "ptranshierarchy3d"
     ts_path = f"{base_name}.ts"
     onnx_path = f"{base_name}.onnx"
 
 
     # convert backbone3d to onnx
-    allptransblocktrt = AllDSVTBlocksTRT(dsvtblocks_list, layer_norms_list).eval().cuda()
+    allptransblocktrt = AllPtransBlocksTRT(ptransblocks_list, layer_norms_list).eval().cuda()
     torch.onnx.export(
         allptransblocktrt,
-        alldsvtblockstrt_inputs,
+        allptransblockstrt_inputs,
         onnx_path, input_names=input_names,
         output_names=output_names, dynamic_axes=dynamic_axes,
         opset_version=14,
     )
-
-    # change onnx model to inferred model 
-    inferred_model_path = f"{base_name}_inferred.onnx"
-    # Load the original model
-    model = onnx.load(onnx_path)
-    # Run shape inference
-    inferred_model = shape_inference.infer_shapes(model)
-    # Save the inferred model
-    onnx.save(inferred_model, inferred_model_path)
-
-
     # test onnx
+    # Specify the providers you want to use
     # providers = ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
     providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
-    ort_session = ort.InferenceSession(inferred_model_path,providers=providers)
+    ort_session = ort.InferenceSession(onnx_path, providers=providers)
     def to_numpy(tensor):
         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
     
@@ -273,16 +285,78 @@ with torch.no_grad():
                   ort_session.get_inputs()[3].name: to_numpy(set_voxel_masks_list[0][0]),
                   ort_session.get_inputs()[4].name: to_numpy(set_voxel_masks_list[0][1]),
                   ort_session.get_inputs()[5].name: to_numpy(torch.stack([torch.stack(v, dim=0) for v in pos_embed_list[0]], dim=0)),}
-    ort_outs = ort_session.run(None, ort_inputs) 
-####### torch to onnx #######
+    ort_outs = ort_session.run(None, ort_inputs)
 
-# trtexec --onnx=./deploy_files/dsvt.onnx --saveEngine=dsvt1.engine
 
-####### torch to trt engine #######
-# trtexec --onnx={path to onnx} --saveEngine={path to save trtengine} \
+
+##############################################################################################################
+    # convert pillarscatter, backbone 2d, and center head to onnx
+    jit_mode = "trace"
+    input_names = ["voxel_features", "voxel_coords"]
+    output_names = ['center', 'center_z', 'dim', 'rot', 'hm']
+    input_shapes = {
+        "voxel_features":
+            {
+                "min_shape": [24629, 192],
+                "opt_shape": [24629, 192],
+                "max_shape": [24629, 192],
+            },
+        "voxel_coords":
+            {
+                "min_shape": [24629, 4],
+                "opt_shape": [24629, 4],
+                "max_shape": [24629, 4],
+            }
+    }
+    dynamic_axes = {
+        "voxel_features": {
+            0: "voxel_number",
+        },
+        "voxel_coords": {
+            0: "voxel_number",
+        },
+    }
+
+    base_name = "dsvt"
+    ts_path = f"{base_name}.ts"
+    onnx_path = f"{base_name}.onnx"
+
+    combine3modules = Combine3Modules().eval().cuda()
+    combine3modules_inputs = (batch_dict["voxel_features"], batch_dict["voxel_coords"])
+
+    torch.onnx.export(
+        combine3modules, combine3modules_inputs, onnx_path,
+        input_names=input_names, output_names=output_names,
+        dynamic_axes=dynamic_axes,
+        opset_version=14,
+    )
+
+
+import onnx
+
+# Load the ONNX model
+model = onnx.load("dsvt.onnx")
+
+# Check the model
+try:
+    onnx.checker.check_model(model)
+    print("The model is valid.")
+except onnx.checker.ValidationError as e:
+    print(f"The model is invalid: {e}")
+
+# (Optional) Print the model graph
+print(onnx.helper.printable_graph(model.graph))
+
+'''
+    conver onnx to trt engine, example of combine3modules_dynamic_shape
+'''
+# trtexec --onnx=combine3modules_dynamic_shape.onnx \
+# --saveEngine=combine3modules_dynamic_shape.engine \
+# --memPoolSize=workspace:4096 --verbose --buildOnly --device=1 --tacticSources=+CUDNN,+CUBLAS,-CUBLAS_LT,+EDGE_MASK_CONVOLUTIONS \
+# --minShapes=voxel_features:3000x192,voxel_coords:3000x4 --optShapes=voxel_features:25000x192,voxel_coords:25000x4 --maxShapes=voxel_features:35000x192,voxel_coords:35000x4 > debug.log 2>&1
+
+# fp16
+# trtexec --onnx=combine3modules_dynamic_shape.onnx --saveEngine=combine3modules_dynamic_shape_fp16.engine \
 # --memPoolSize=workspace:4096 --verbose --buildOnly --device=1 --fp16 \
 # --tacticSources=+CUDNN,+CUBLAS,-CUBLAS_LT,+EDGE_MASK_CONVOLUTIONS \
-# --minShapes=src:3000x192,set_voxel_inds_tensor_shift_0:2x170x36,set_voxel_inds_tensor_shift_1:2x100x36,set_voxel_masks_tensor_shift_0:2x170x36,set_voxel_masks_tensor_shift_1:2x100x36,pos_embed_tensor:4x2x3000x192 \
-# --optShapes=src:20000x192,set_voxel_inds_tensor_shift_0:2x1000x36,set_voxel_inds_tensor_shift_1:2x700x36,set_voxel_masks_tensor_shift_0:2x1000x36,set_voxel_masks_tensor_shift_1:2x700x36,pos_embed_tensor:4x2x20000x192 \
-# --maxShapes=src:35000x192,set_voxel_inds_tensor_shift_0:2x1500x36,set_voxel_inds_tensor_shift_1:2x1200x36,set_voxel_masks_tensor_shift_0:2x1500x36,set_voxel_masks_tensor_shift_1:2x1200x36,pos_embed_tensor:4x2x35000x192 \
-####### torch to trt engine #######
+# --minShapes=voxel_features:3000x192,voxel_coords:3000x4 --optShapes=voxel_features:25000x192,voxel_coords:25000x4 --maxShapes=voxel_features:35000x192,voxel_coords:35000x4 > debug.log 2>&1
