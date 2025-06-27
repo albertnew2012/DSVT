@@ -1,5 +1,5 @@
 **__pycache__**
-**build**
+**/build
 **egg-info**
 **dist**
 data/
@@ -7,13 +7,12 @@ data/
 venv/
 *.idea/
 *.so
-*.sh
 *.pth
 *.pkl
 *.zip
 *.bin
 output
-version.py   
+version.py
 *.onnx
 *.log
 *.engine
