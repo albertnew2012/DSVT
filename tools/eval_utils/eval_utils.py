@@ -55,6 +55,10 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
     if cfg.LOCAL_RANK == 0:
         progress_bar = tqdm.tqdm(total=len(dataloader), leave=True, desc='eval', dynamic_ncols=True)
     start_time = time.time()
+
+    if getattr(args, 'save_inference', False):
+        predictions = []
+
     for i, batch_dict in enumerate(dataloader):
         load_data_to_gpu(batch_dict)
 
@@ -63,6 +67,18 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
 
         with torch.no_grad():
             pred_dicts, ret_dict = model(batch_dict)
+
+        if getattr(args, 'save_inference', False):
+        # only save inference and points for the first fram in each batch
+            points = batch_dict['points'].cpu()
+            mask = points[:, 0] == 0
+            prediction = {
+                "boxes_3d": pred_dicts[0]['pred_boxes'].cpu(),
+                "labels_3d": pred_dicts[0]['pred_labels'].cpu(),
+                "scores_3d": pred_dicts[0]['pred_scores'].cpu(),
+                "points": points[mask][:, 1:],
+            }
+            predictions.append({"prediction": prediction})
 
         disp_dict = {}
 
@@ -81,6 +97,10 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         if cfg.LOCAL_RANK == 0:
             progress_bar.set_postfix(disp_dict)
             progress_bar.update()
+    if getattr(args, 'save_inference', False):
+        output_file = "./nuscenes.pkl"
+        with open(output_file, "wb") as f:
+            pickle.dump(predictions, f)
 
     if cfg.LOCAL_RANK == 0:
         progress_bar.close()
