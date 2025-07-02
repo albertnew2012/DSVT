@@ -23,7 +23,7 @@ import importlib.util
 pcdet_spec = importlib.util.find_spec('pcdet')
 pcdet_location = pcdet_spec.origin
 
-print(f'The location of pcdet is: {pcdet_location}')
+# print(f'The location of pcdet is: {pcdet_location}')
 
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
@@ -40,7 +40,10 @@ def parse_config():
     parser.add_argument('--sync_bn', action='store_true', default=False, help='whether to use sync bn')
     parser.add_argument('--fix_random_seed', action='store_true', default=False, help='')
     parser.add_argument('--ckpt_save_interval', type=int, default=1, help='number of training epochs')
-    parser.add_argument('--local_rank', type=int, default=0, help='local rank for distributed training')
+    # parser.add_argument('--local_rank', type=int, default=0, help='local rank for distributed training')
+    parser.add_argument('--local_rank', '--local-rank',
+                        dest='local_rank', type=int, default=0,
+                        help='Rank passed in by torch.distributed.launch / torchrun')
     parser.add_argument('--max_ckpt_save_num', type=int, default=1000, help='max number of saved checkpoint')
     parser.add_argument('--merge_all_iters_to_one_epoch', action='store_true', default=False, help='')
     parser.add_argument('--set', dest='set_cfgs', default=None, nargs=argparse.REMAINDER,

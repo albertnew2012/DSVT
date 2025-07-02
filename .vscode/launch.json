@@ -51,6 +51,37 @@
             }
         },
         {
+            "name": "Python: Distributed Training",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "torch.distributed.launch", // Match dist_train.sh
+            "subProcess": true, // <-- This instructs debugpy to attach to child processes
+            "args": [
+                "--nproc_per_node=4", // Number of GPUs
+                "--master_port=29508", // Port for distributed setup
+                "--rdzv_conf",
+                "timeout=3600", // Rendezvous timeout (same as your script)
+                "${workspaceFolder}/tools/train.py", // Path to train.py
+                "--cfg_file",
+                "tools/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug.yaml", // CONFIG file
+                "--launcher",
+                "pytorch" // Required for MMDetection
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
+                "CUDA_VISIBLE_DEVICES": "0,1,2,3", // Match your GPU setup
+                "LOCAL_RANK": "0", // Set local rank to 0
+                "CUDA_LAUNCH_BLOCKING": "1", // For debugging CUDA errors
+                "PYDEVD_WARN_EVALUATION_TIMEOUT": "10", // Increase timeout for evaluations
+                "PYDEVD_UNBLOCK_THREADS_TIMEOUT": "5", // Unblock threads after 5 seconds
+                "PYDEVD_INTERRUPT_THREAD_TIMEOUT": "3" // Interrupt stuck threads after 3 seconds
+            },
+            "console": "integratedTerminal", // Output in VS Code terminal
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": true,
+            "justMyCode": true
+        },
+        {
             "name": "Python: test onestage_nusences",
             "type": "debugpy",
             "request": "launch",
@@ -62,7 +93,7 @@
                 "--ckpt",
                 // "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_2.pth"
                 // "DSVT_Nuscenes_val.pth",
-                "/home/zhengzhiliu/Desktop/DSVT/output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_100.pth",
+                "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_2.pth",
                 // "--pretrained_model",
                 // "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/ckpt/checkpoint_epoch_24.pth"
                 // "tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml"
