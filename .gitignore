@@ -1,7 +1,6 @@
 **__pycache__**
 **/build
 **egg-info**
-**dist**
 data/
 *.pyc
 venv/
@@ -19,3 +18,4 @@ version.py
 *.trt
 *.wts
 events.out.tfevents.*
+hostfile.txt
