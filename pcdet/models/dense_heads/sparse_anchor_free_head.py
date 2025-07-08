@@ -109,7 +109,7 @@ class SparseAnchorFreeHead(nn.Module):
         corners2d = box_utils.boxes_to_corners_2d(
             gt_boxes, point_cloud_range=[-75.2, -75.2, -2, 75.2, 75.2, 4], voxel_size=(0.1, 0.1, 0.2)
         )
-        corners2d = np.round(corners2d / 8).astype(np.int)
+        corners2d = np.round(corners2d / 8).astype(int)
 
         img = np.ones(feature_map_size) * -1
         img = V.draw_bev_boxes(img, corners2d, thickness=1, draw_arrow=False)  # the drawed lines will be zeros
