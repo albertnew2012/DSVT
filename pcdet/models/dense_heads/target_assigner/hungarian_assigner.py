@@ -101,7 +101,8 @@ class HungarianAssigner3D:
             if num_gts == 0:
                 # No ground truth, assign all to background
                 assigned_gt_inds[:] = 0
-            return num_gts, assigned_gt_inds, max_overlaps, assigned_labels
+            max_overlaps = bboxes.new_zeros((num_bboxes,))
+            return assigned_gt_inds, max_overlaps
 
         # 2. compute the weighted costs
         cls_cost = self.focal_loss_cost(cls_pred[0].T, gt_labels)
