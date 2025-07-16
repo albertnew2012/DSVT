@@ -4,5 +4,19 @@
     "python.autoComplete.extraPaths": ["${workspaceFolder}"],
     "terminal.integrated.env.linux": {
         "PYTHONPATH": "${workspaceFolder}"
-    }
+    },
+    "python.analysis.exclude": [
+        "**/__pycache__",
+        "**/build",
+        "**/.git",
+        "**/data/**",
+        "**/*.egg-info/**"
+    ],
+    "search.exclude": {
+        "**/__pycache__/**": true,
+        "**/build/**": true,
+        "**/.git/**": true,
+        "**/data/**": true,
+        "**/*.egg-info/**": true
+    },
 }
