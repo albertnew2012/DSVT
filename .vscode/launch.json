@@ -165,7 +165,8 @@
             "program": "${workspaceFolder}/tools/visual_utils/visualize_eval_result.py",
             "console": "internalConsole",
             "args": [
-                "output/cfgs/dsvt_models/dsvt_cbgs_dyn_pp_centerpoint/default/eval/eval_with_train/result.pkl"
+                // "output/cfgs/dsvt_models/dsvt_cbgs_dyn_pp_centerpoint/default/eval/eval_with_train/result.pkl"
+                "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_successful/default/eval/eval_with_train/epoch_20/val/result.pkl"
                 // "output/cfgs/dsvt_models/dsvt_plain_1f_onestage_nusences_debug/default/eval/epoch_99/val/default/result.pkl"
             ],
             "stopOnEntry": true,

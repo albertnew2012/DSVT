@@ -51,7 +51,7 @@ def visualize(points: np.array, boxes: np.array, labels=None):
     o3d.visualization.draw_geometries(geometries)
 
 
-def load_pcd_bin_file(file_path,save_bin=True):
+def load_pcd_bin_file(file_path,save_bin=False):
     # Load the binary point cloud file
     with open(file_path, 'rb') as f:
         # By default, each point is represented by 5 floats (x, y, z, intensity, ring)
